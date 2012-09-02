@@ -1,7 +1,8 @@
----------- Skype .NET ------------
-01 Sept 2012 
-Sverrir Sigmundarson
-https://github.com/sverrirs/SkypeNet
+Skype .NET
+-----------------------------------------------
+Created: Sept 2012 
+Author: Sverrir Sigmundarson
+Where: https://github.com/sverrirs/SkypeNet
 
 
 "Don't worry about people stealing your ideas. 
