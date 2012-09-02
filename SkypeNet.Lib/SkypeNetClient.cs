@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using SkypeNet.Lib.Core.Messages;
+using SkypeNet.Lib.Core;
+using SkypeNet.Lib.Core.Objects;
 
 namespace SkypeNet.Lib
 {
@@ -14,7 +16,57 @@ namespace SkypeNet.Lib
     /// </summary>
     public sealed class SkypeNetClient : SkypeNet
     {
-        public SkypeNetClient() : base()
+        /// <summary>
+        /// Contains all calls made and received from Skype
+        /// </summary>
+        private readonly Dictionary<string, SkypeCall> _calls = new Dictionary<string, SkypeCall>();
+        private readonly Dictionary<string, SkypeUser> _users = new Dictionary<string, SkypeUser>();
+
+        /// <summary>
+        /// Temporarilly holds a pending call that the user initiated him/herself. Waiting to get a call id
+        /// </summary>
+        private SkypeCall _pendingCall;
+
+        #region Events
+
+        /// <summary>
+        /// Raised when a new call is received in the application. This is usually when 
+        /// someone calls the current user.
+        /// </summary>
+        public event GenericEventHandler<SkypeCall> CallReceived;
+        private void OnCallReceived( SkypeCall call )
+        {
+            CallReceived.Raise(this, call);
+        }
+
+        /// <summary>
+        /// Raised when an existing call that is either over or in progress is updated
+        /// </summary>
+        public event GenericEventHandler<SkypeCall> CallUpdated;
+        private void OnCallUpdated( SkypeCall call )
+        {
+            CallUpdated.Raise(this, call);
+        }
+
+        #endregion
+
+        /// <summary>
+        /// The current user that is logged into the Skype instance that is connected
+        /// </summary>
+        public SkypeUser CurrentUser { get; private set; }
+
+        /// <summary>
+        /// Gets the version of skype that the user is running
+        /// </summary>
+        public string SkypeVersion { get; private set; }
+
+        /// <summary>
+        /// Gets the connection status of the Skype application
+        /// </summary>
+        public string ConnectionStatus { get; private set; }
+
+        public SkypeNetClient()
+            : base()
         {
             this.MessageReceived += OnMessageReceived_ForParsingOfMessageData;
         }
@@ -26,9 +78,144 @@ namespace SkypeNet.Lib
             base.Dispose(disposing);
         }
 
-        private void OnMessageReceived_ForParsingOfMessageData(object sender, string s)
+        private void OnMessageReceived_ForParsingOfMessageData(object sender, string rawResponse)
         {
+            if( rawResponse == null ) return;
+            var values = rawResponse.Split(' ');
+            if (values.Length <= 1) return;
+
+            string action = values[0];
+            string subjectId = values[1];
+            string property = values.Length > 2 ? values[2] : null;
+            string value = values.Length > 3 ? values.Length == 4 ? values[3] : string.Join(" ", values, 3, values.Length - 4) : null;
+
+            switch (action)
+            {
+                // Objects
+                case "CALL":
+                    HandleCallMessage(subjectId, property, value);
+                    break;
+                case "CHAT":
+                    HandleChatMessage(subjectId, property, value);
+                    break;
+                case "GROUP":
+                    HandleGroupMessage(subjectId, property, value);
+                    break;
+                case "USER":
+                    HandleUserMessage(subjectId, property, value);
+                    break;
+                // Application state
+                case "WINDOWSTATE":
+                    break;
+                case "SKYPEVERSION":
+                    SkypeVersion = subjectId;
+                    break;
+
+                // Connection
+                case "CONNSTATUS":
+                    ConnectionStatus = subjectId;
+                    break;
+
+                // Current user
+                case "CURRENTUSERHANDLE":
+                    SetCurrentUser(subjectId);
+                    break;
+                case "USERSTATUS":
+                    SetCurrentUserStatus(subjectId);
+                    break;
+                case "CHATMEMBER":
+                    break;
+
+                // Unknown stuff
+                default:
+                    Debug.Print("Unknown: "+rawResponse);
+                    break;
+            }
+        }
+
+        /// <summary>
+        /// Gets a user by username from the list of all known users. If user does not exist then 
+        /// a new user is created with that username and added to the dictionary. The client then 
+        /// requests basic information for this new user from the Skype application.
+        /// </summary>
+        /// <param name="username"></param>
+        /// <returns></returns>
+        private SkypeUser GetOrCreateUser(string username)
+        {
+            SkypeUser user;
+            if( !_users.TryGetValue(username, out user))
+            {
+                user = new SkypeUser(){UserName = username};
+                _users.Add(username, user);
+            }
+            return user;
+        }
+
+        private void SetCurrentUserStatus(string userstatus)
+        {
+            if (CurrentUser == null)
+                return;
+
+            CurrentUser.OnlineStatus = userstatus;
+        }
+
+        private void SetCurrentUser(string username)
+        {
+            CurrentUser = GetOrCreateUser(username);
+        }
+        
+        private void HandleCallMessage(string callId, string property, string value)
+        {
+            // Attempt to locate the call message in all the calls available
+            // if not found then we create a new one and raise the newCall event otherwise we invoke the call updated event
+            SkypeCall call;
+            bool isUpdate = _calls.TryGetValue(callId, out call);
+
+            if (!isUpdate)
+            {
+                // If the property is STATUS and value is UNPLACED then check to see if we have a pending call
+                // in that case we associate that pending call with this information and continue
+                if (_pendingCall != null && property == "STATUS" && value == "UNPLACED")
+                {
+                    call = _pendingCall;
+                    call.Id = callId;
+                    _pendingCall = null;
+                }
+                else
+                {
+                    call = new SkypeCall {Id = callId};
+                }
+
+                // Add the call to the list of all known calls
+                _calls.Add(callId, call);
+            }
+
             
+            // Update the property value if it is set
+            if( property != null )
+                SkypeSerializer.Update(call, property, value);
+
+            // Raise the correct events
+            if (isUpdate)
+                OnCallUpdated(call);
+            else
+                OnCallReceived(call);
+        }
+
+        private void HandleChatMessage(string chatId, string property, string value)
+        {
+
+        }
+
+        private void HandleGroupMessage(string groupId, string property, string value)
+        {
+
+        }
+
+
+        private void HandleUserMessage(string username, string property, string value)
+        {
+
         }
 
         #region Core Commands
@@ -44,10 +231,15 @@ namespace SkypeNet.Lib
         /// </param>
         public void Call(params string[] targets)
         {
+            if (targets == null || targets.Length <= 0) throw new ArgumentNullException("targets", "You must specify at least one target for your call");
+            if( _pendingCall != null ) throw new ServiceAccessException("You already have a pending outgoing call. Please either wait for that to complete or hang up");
 
+            _pendingCall = new SkypeCall() { Targets = targets};
+
+            SendMessage("CALL " + string.Join(", ", targets));
         }
 
-        /// <summary>
+        /*/// <summary>
         /// Sends a SMS text message to one or more targets
         /// </summary>
         /// <param name="target">the target of the sms (to add more recipients use the <see cref="SkypeAlterActions.SMS"/></param>
@@ -55,48 +247,8 @@ namespace SkypeNet.Lib
         public void Sms(string target, SkypeSmsTypes smsType)
         {
 
-        }
+        }*/
 
         #endregion
-
-
-        #region Sending of Commands
-
-        public void Get(SkypeGetActions action, params SkypeActionParameter[] parameters)
-        {
-
-        }
-
-        public void Set(SkypeSetActions action, string subject, params SkypeActionParameter[] parameters)
-        {
-
-        }
-
-        public void Alter(SkypeAlterActions action, string subject, params SkypeActionParameter[] parameters)
-        {
-
-        }
-
-        public void Search(SkypeSearchActions action, string subject, params SkypeActionParameter[] parameters)
-        {
-
-        }
-
-        public void Open(SkypeOpenActions action, string subject, params SkypeActionParameter[] parameters)
-        {
-
-        }
-
-        #endregion
-
-        /// <summary>
-        /// Attempts to parse the event coming from skype and raise the appropriate 
-        /// event back to the listener
-        /// </summary>
-        /// <param name="response">the raw response string from the app</param>
-        private void ParseEventAndReport(string response)
-        {
-            
-        }
     }
 }

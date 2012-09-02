@@ -8,16 +8,16 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using SkypeNet.Lib;
-using SkypeNet.Lib.Core.Messages;
+using SkypeNet.Lib.Core.Objects;
 
 namespace SkypeNet.App
 {
     public partial class Form1 : Form
     {
         private TaskScheduler _uiScheduler;
-        private Lib.SkypeNet _skype;
+        private Lib.SkypeNetClient _skype;
 
-        public Lib.SkypeNet Skype
+        public SkypeNetClient Skype
         {
             get { return _skype; }
             set
@@ -30,6 +30,9 @@ namespace SkypeNet.App
                     _skype.StatusChanged -= SkypeOnStatusChanged;
                     _skype.MessageReceived -= SkypeOnMessageReceived;
 
+                    _skype.CallReceived -= SkypeOnCallReceived;
+                    _skype.CallUpdated -= SkypeOnCallUpdated;
+
                     _skype.Dispose();
                     _skype = null;
                 }
@@ -40,6 +43,9 @@ namespace SkypeNet.App
                 {
                     _skype.StatusChanged += SkypeOnStatusChanged;
                     _skype.MessageReceived += SkypeOnMessageReceived;
+
+                    _skype.CallReceived += SkypeOnCallReceived;
+                    _skype.CallUpdated += SkypeOnCallUpdated;
                 }
 
             }
@@ -82,23 +88,33 @@ namespace SkypeNet.App
             lblStatus.Text = skypeStatus.ToString();
         }
 
+        private void SkypeOnCallUpdated(object sender, SkypeCall skypeCall)
+        {
+            rtbOutput.AppendText("Call Updated: " + skypeCall.Id + " > "+skypeCall.Status + " > "+skypeCall.Duration+"\n");
+        }
+
+        private void SkypeOnCallReceived(object sender, SkypeCall skypeCall)
+        {
+            rtbOutput.AppendText("Call Received: " + skypeCall.Id + " > " + skypeCall.Status + " > " + skypeCall.Duration + "\n");
+        }
+
         private void btnTest_Click(object sender, EventArgs e)
         {
-            rtbOutput.Text += "============ New Client ==========\n";
-            rtbMessages.Text += "============ New Client ==========\n";
+            rtbOutput.Text += "============ Skype Client ==========\n";
+            rtbMessages.Text += "============ Skype Net ==========\n";
 
-            Skype = new Lib.SkypeNet();
+            Skype = new Lib.SkypeNetClient();
 
             var task = Skype.ConnectAsync();
             task.ContinueWith(ret =>
                                   {
                                       if( ret.IsCompleted )
                                       {
-                                          rtbOutput.Text += "Connected!";
+                                          rtbOutput.AppendText("Connected!\n");
                                       }
                                       else
                                       {
-                                          rtbOutput.Text += ret.Exception != null ? ret.Exception.ToString() : "Failed!";
+                                          rtbOutput.AppendText(ret.Exception != null ? ret.Exception.ToString() : "Failed!");
                                       }
                                   }, _uiScheduler);
         }
@@ -109,6 +125,11 @@ namespace SkypeNet.App
                 return;
 
             Skype.SendMessage("GET SKYPEVERSION");
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Skype.SendMessage("CALL echo123");
         }
     }
 }

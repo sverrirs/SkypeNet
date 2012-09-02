@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-using System.Text;
+﻿using System.ComponentModel;
 
-namespace SkypeNet.Lib.Core.Messages
+namespace SkypeNet.Lib.Core
 {
     /// <summary>
     /// The types of skype commands

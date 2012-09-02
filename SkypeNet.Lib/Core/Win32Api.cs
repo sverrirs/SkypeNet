@@ -43,14 +43,6 @@ namespace SkypeNet.Lib.Core
 
         public static readonly uint WM_COPYDATA = 0x004a;
 
-        /*[StructLayout(LayoutKind.Sequential, CharSet = CharSet.Unicode)]
-        public struct CopyDataStruct
-        {
-            public string ID;
-            public int Length;
-            public string Data;
-        }*/
-
         [StructLayout(LayoutKind.Sequential)]
         public struct CopyDataStruct
         {

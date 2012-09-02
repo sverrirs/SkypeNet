@@ -42,12 +42,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Core\GenericEventHandler.cs" />
-    <Compile Include="Core\Messages\SkypeActionParameter.cs" />
-    <Compile Include="Core\Messages\SkypeActions.cs" />
-    <Compile Include="Core\Messages\SkypeMessage.cs">
-      <SubType>Code</SubType>
-    </Compile>
-    <Compile Include="Core\Messages\SkypeTypes.cs" />
+    <Compile Include="Core\Objects\SkypeActions.cs" />
+    <Compile Include="Core\SkypeTypes.cs" />
+    <Compile Include="Core\Objects\SkypeCall.cs" />
+    <Compile Include="Core\Objects\SkypeChat.cs" />
+    <Compile Include="Core\Objects\SkypeSerializer.cs" />
+    <Compile Include="Core\SkypeParameterAttribute.cs" />
+    <Compile Include="Core\Objects\SkypeUser.cs" />
+    <Compile Include="Core\ThreadingExtensions.cs" />
     <Compile Include="SkypeNet.cs">
       <SubType>Component</SubType>
     </Compile>

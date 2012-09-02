@@ -9,7 +9,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using SkypeNet.Lib.Core;
-using SkypeNet.Lib.Core.Messages;
 
 namespace SkypeNet.Lib
 {
@@ -160,7 +159,7 @@ namespace SkypeNet.Lib
         public event GenericEventHandler<SkypeStatus, SkypeStatus> StatusChanging;
         private void OnStatusChanging(SkypeStatus currentStatus, SkypeStatus newStatus)
         {
-            InvokeThreadSafe(()=> StatusChanging.Raise(this, currentStatus, newStatus));
+            _context.InvokeThreadSafe(() => StatusChanging.Raise(this, currentStatus, newStatus));
         }
 
         /// <summary>
@@ -169,7 +168,7 @@ namespace SkypeNet.Lib
         public event GenericEventHandler<SkypeStatus> StatusChanged;
         private void OnStatusChanged(SkypeStatus status)
         {
-            InvokeThreadSafe(()=> StatusChanged.Raise(this, status));
+            _context.InvokeThreadSafe(() => StatusChanged.Raise(this, status));
         }
 
         /// <summary>
@@ -178,12 +177,10 @@ namespace SkypeNet.Lib
         public event GenericEventHandler<string> MessageReceived;
         private void OnMessageReceived(string message)
         {
-            InvokeThreadSafe(()=> MessageReceived.Raise(this, message));
+            _context.InvokeThreadSafe(() => MessageReceived.Raise(this, message));
         }
         #endregion
-
-
-
+        
         #region Properties
 
         /// <summary>
@@ -212,7 +209,6 @@ namespace SkypeNet.Lib
 
         #endregion
 
-
         public SkypeNet()
         {
             _context = SynchronizationContext.Current;
@@ -233,17 +229,6 @@ namespace SkypeNet.Lib
             DestroyHandle();
 
             base.Dispose(disposing);
-        }
-
-        private void InvokeThreadSafe(Action action)
-        {
-            if (action == null)
-                return;
-
-            if (_context != null && _context != SynchronizationContext.Current)
-                _context.Post(_ => action(), null);
-            else
-                action();
         }
 
         #region Connection and Disconnection

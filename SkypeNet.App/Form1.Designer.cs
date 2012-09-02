@@ -35,6 +35,7 @@
             this.scMain = new System.Windows.Forms.SplitContainer();
             this.rtbMessages = new System.Windows.Forms.RichTextBox();
             this.btnSend = new System.Windows.Forms.Button();
+            this.button1 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.scMain)).BeginInit();
             this.scMain.Panel1.SuspendLayout();
             this.scMain.Panel2.SuspendLayout();
@@ -44,7 +45,7 @@
             // btnTest
             // 
             this.btnTest.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.btnTest.Location = new System.Drawing.Point(289, 12);
+            this.btnTest.Location = new System.Drawing.Point(90, 12);
             this.btnTest.Name = "btnTest";
             this.btnTest.Size = new System.Drawing.Size(75, 23);
             this.btnTest.TabIndex = 0;
@@ -59,7 +60,7 @@
             this.rtbOutput.Location = new System.Drawing.Point(0, 0);
             this.rtbOutput.Name = "rtbOutput";
             this.rtbOutput.ReadOnly = true;
-            this.rtbOutput.Size = new System.Drawing.Size(453, 254);
+            this.rtbOutput.Size = new System.Drawing.Size(376, 241);
             this.rtbOutput.TabIndex = 1;
             this.rtbOutput.Text = "";
             // 
@@ -86,7 +87,7 @@
             this.scMain.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.scMain.Location = new System.Drawing.Point(0, 41);
+            this.scMain.Location = new System.Drawing.Point(0, 65);
             this.scMain.Name = "scMain";
             this.scMain.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
@@ -97,8 +98,8 @@
             // scMain.Panel2
             // 
             this.scMain.Panel2.Controls.Add(this.rtbOutput);
-            this.scMain.Size = new System.Drawing.Size(453, 455);
-            this.scMain.SplitterDistance = 197;
+            this.scMain.Size = new System.Drawing.Size(376, 431);
+            this.scMain.SplitterDistance = 186;
             this.scMain.TabIndex = 4;
             // 
             // rtbMessages
@@ -109,25 +110,36 @@
             this.rtbMessages.Location = new System.Drawing.Point(0, 0);
             this.rtbMessages.Name = "rtbMessages";
             this.rtbMessages.ReadOnly = true;
-            this.rtbMessages.Size = new System.Drawing.Size(453, 197);
+            this.rtbMessages.Size = new System.Drawing.Size(376, 186);
             this.rtbMessages.TabIndex = 0;
             this.rtbMessages.Text = "";
             // 
             // btnSend
             // 
-            this.btnSend.Location = new System.Drawing.Point(371, 12);
+            this.btnSend.Location = new System.Drawing.Point(297, 7);
             this.btnSend.Name = "btnSend";
             this.btnSend.Size = new System.Drawing.Size(75, 23);
             this.btnSend.TabIndex = 5;
-            this.btnSend.Text = "Send";
+            this.btnSend.Text = "Version";
             this.btnSend.UseVisualStyleBackColor = true;
             this.btnSend.Click += new System.EventHandler(this.btnSend_Click);
+            // 
+            // button1
+            // 
+            this.button1.Location = new System.Drawing.Point(297, 36);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(75, 23);
+            this.button1.TabIndex = 6;
+            this.button1.Text = "Call";
+            this.button1.UseVisualStyleBackColor = true;
+            this.button1.Click += new System.EventHandler(this.button1_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(453, 496);
+            this.ClientSize = new System.Drawing.Size(376, 496);
+            this.Controls.Add(this.button1);
             this.Controls.Add(this.btnSend);
             this.Controls.Add(this.scMain);
             this.Controls.Add(this.lblStatus);
@@ -156,6 +168,7 @@
         private System.Windows.Forms.SplitContainer scMain;
         private System.Windows.Forms.RichTextBox rtbMessages;
         private System.Windows.Forms.Button btnSend;
+        private System.Windows.Forms.Button button1;
     }
 }
 
