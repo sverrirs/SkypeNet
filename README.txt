@@ -33,3 +33,23 @@ please consider contributing any enhancements you
 make to it code, design, ideas or thoughts.
 
 
+How to use:
+-----------------------------------------------
+There are two main classes:
+	SkypeNet.cs
+		Provides low level communication with a Skype instance
+		only via the windows messaging functions. No understanding
+		of the data that is passed to or received from Skype.
+
+		Few points of failures, best suited for debugging or 
+		monitoring situations
+
+	SkypeNetClient.cs
+		High-level access to a Skype instance. This class understands
+		the messages being passed and is aware of protocol support etc
+
+		This is the class most applications that require to interact
+		with Skype (e.g. initiate or receive calls, chats, sms etc)
+
+See the SkypeNet.App for examples on how to use these classes.
+		
