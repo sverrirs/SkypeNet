@@ -14,8 +14,11 @@ them down people's throats."
 What is this:
 -----------------------------------------------
 A .NET 4 implementation of the Skype Desktop API. 
-Provides a native C# way of communicating with a 
-running instance of the Skype application.
+http://developer.skype.com/public-api-reference-index
+
+Provides a native C# implementation to communicate 
+with a running instance of the Skype application.
+Uses p/Invoke though and depends on user32.dll.
 
 Based off previous work done by Gabriel Szabo and 
 published on CodeProject in 2006 including a bug fix 
@@ -24,13 +27,15 @@ http://www.codeproject.com/Articles/13081/Controlling-Skype-with-C
 
 License or other restrictions:
 -----------------------------------------------
-None, absolutely none.
-
 Take it and do with it what you like. I'd honestly 
 be delighted if anyone would be interested in using 
-this code. I only ask that if you do indeed use it 
-please consider contributing any enhancements you 
-make to it code, design, ideas or thoughts.
+this code. 
+
+I only ask that if you do indeed use it 
+please consider contributing any enhancements, ideas, 
+design, problems encountered or other thoughts back 
+to this project so other people might also benefit 
+from them.
 
 
 How to use:
