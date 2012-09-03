@@ -37,6 +37,12 @@ design, problems encountered or other thoughts back
 to this project so other people might also benefit 
 from them.
 
+Just as a reminder though, in order to use the Skype Desktop API 
+(which this library helps you do) you must first register as 
+a developer on http://developer.skype.com. You agree to provide 
+complete, truthful and accurate information in connection with 
+such registration.
+
 
 How to use:
 -----------------------------------------------
