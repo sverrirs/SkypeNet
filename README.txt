@@ -25,6 +25,13 @@ published on CodeProject in 2006 including a bug fix
 proposed by user Vlad0 to that same project on 19 Sep 2007
 http://www.codeproject.com/Articles/13081/Controlling-Skype-with-C
 
+This project was started as an open-source alternative 
+to the ActiveX control Skype4COM that Skype already offers 
+for developers. If you want you can download Skype4COM from
+the official Skype developer website: 
+http://developer.skype.com/accessories/skype4com
+
+
 License or other restrictions:
 -----------------------------------------------
 Take it and do with it what you like. I'd honestly 
