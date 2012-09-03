@@ -61,6 +61,12 @@ namespace SkypeNet.Lib
         public string SkypeVersion { get; private set; }
 
         /// <summary>
+        /// The currently supported protocol version for this skype client.
+        /// Default is <see cref="SkypeApiVersions.All"/>
+        /// </summary>
+        public SkypeApiVersions ProtocolVersion { get; set; }
+
+        /// <summary>
         /// Gets the connection status of the Skype application
         /// </summary>
         public string ConnectionStatus { get; private set; }
@@ -68,6 +74,7 @@ namespace SkypeNet.Lib
         public SkypeNetClient()
             : base()
         {
+            ProtocolVersion = SkypeApiVersions.All;
             this.MessageReceived += OnMessageReceived_ForParsingOfMessageData;
         }
 

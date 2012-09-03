@@ -201,18 +201,11 @@ namespace SkypeNet.Lib
             }
         }
 
-        /// <summary>
-        /// The currently supported protocol version for this skype client.
-        /// Default is <see cref="SkypeApiVersions.All"/>
-        /// </summary>
-        public SkypeApiVersions ProtocolVersion { get; set; }
-
         #endregion
 
         public SkypeNet()
         {
             _context = SynchronizationContext.Current;
-            ProtocolVersion = SkypeApiVersions.All;
         }
 
         protected override void Dispose(bool disposing)
@@ -241,8 +234,13 @@ namespace SkypeNet.Lib
             if (_skypeWindowHandle != IntPtr.Zero)
                 throw new InvalidOperationException("This client is already connected to a Skype instance. Please disconnect first");
 
+            // If the skype client is in a NotAvailable state we need to throw an error and ask the user to wait until 
+            // the client becomes Available again before attempting a connection
+            if( Status == SkypeStatus.NotAvailable )
+                throw new ServiceAccessException("The API is not available at the moment, possible explanation is that there is no user currently logged in. Please wait until the client updates its status to 'Available' before attempting to connect again");
+
             // Begin by creating a handle for this class so that we can register for Messages
-            // need to force the re-creation of a handle. Will this leak?!
+            // Is it better to force the re-creation of a handle? 
             RecreateHandle();
 
             TaskCompletionSource<bool> sSource = new TaskCompletionSource<bool>();
@@ -339,13 +337,18 @@ namespace SkypeNet.Lib
             // Use the PING command to test the connection status. To ease debugging during development, in 
             // regedit enter the key APITimeoutDisabled (DWORD value, 0 = timeout enabled 1 = timeout disabled) 
             // into the HKCU\Software\Skype\Phone\UI file in the registry to override the 1 second timeout.
+            var msgId = (UInt32) m.Msg;
 
-            var aMsg = (UInt32) m.Msg;
-            if (aMsg == _skypeWindowMessageAttachId)
+            // 
+            // Reply from the async attach event, wooho we might have gotten our skype handle here!
+            // or potentially lost it i guess :(
+            if (msgId == _skypeWindowMessageAttachId)
             {
                 var skypeStatus = (SkypeStatus) m.LParam;
                 if (skypeStatus == SkypeStatus.Success)
                     _skypeWindowHandle = m.WParam;
+                else
+                    _skypeWindowHandle = IntPtr.Zero; // Clear out the handle if we get anything else than Success status
 
                 Debug.Print("<< Attach: " + skypeStatus);
 
@@ -358,13 +361,26 @@ namespace SkypeNet.Lib
                 return;
             }
 
-            if (aMsg == Win32Api.WM_COPYDATA)
+            //
+            // Not really sure why we would get this message back? Well in case we do 
+            // lets at least log it
+            if (msgId == _skypeWindowMessageDiscoverId )
+            {
+                Debug.Print("<< SkypeControlAPIDiscover");
+
+                m.Result = new IntPtr(1);
+                return;
+            }
+            
+            //
+            // We got some data sent from Skype, what could it be?
+            if (msgId == Win32Api.WM_COPYDATA)
             {
                 // Only handle messages from the attached skype instance
                 if (m.WParam != _skypeWindowHandle)
                     return;
 
-                Win32Api.CopyDataStruct data = (Win32Api.CopyDataStruct) m.GetLParam(typeof (Win32Api.CopyDataStruct));
+                var data = (Win32Api.CopyDataStruct)m.GetLParam(typeof( Win32Api.CopyDataStruct ));
                 var byteData = new byte[data.Length - 1]; //The last byte is 0; bad text formatting if copied to data!
                 Marshal.Copy(data.Data, byteData, 0, data.Length - 1);
                 string response = Encoding.UTF8.GetString(byteData);
@@ -385,24 +401,6 @@ namespace SkypeNet.Lib
 
                 OnMessageReceived(response);
                 
-                /*// If we already have a message we're parsing and that message understands the line we just got
-                // and then subsequently after parsing it the message is ready then let's pass it back to the user 
-                // and start over with a none message
-                if( CurrentMessage != null && CurrentMessage.ParseResponse(response) && CurrentMessage.IsComplete(ProtocolVersion) )
-                {
-                    OnMessageReceived(CurrentMessage);
-                    CurrentMessage = null;
-                }
-                else
-                {
-                    // Create a new message and start parsing
-                    var msg = SkypeMessage.CreateFromRespose(response);
-                    if (msg.IsComplete(ProtocolVersion))
-                        OnMessageReceived(msg);
-                    else
-                        CurrentMessage = msg;
-                }*/
-
                 // We want to handle this type of winmessages, rest can go to the base implementation
                 return;
             }
