@@ -13,7 +13,7 @@ them down people's throats."
 
 What is this:
 -----------------------------------------------
-A .NET 4 implementation of the Skype Desktop API. 
+Skype Desktop API wrapper written for .NET developers (.NET v4.0+). 
 http://developer.skype.com/public-api-reference-index
 
 Provides a native C# implementation to communicate 
