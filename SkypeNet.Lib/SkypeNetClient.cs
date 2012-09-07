@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
@@ -16,16 +17,21 @@ namespace SkypeNet.Lib
     /// </summary>
     public sealed class SkypeNetClient : SkypeNet
     {
+        #region Members
+
         /// <summary>
         /// Contains all calls made and received from Skype
         /// </summary>
         private readonly Dictionary<string, SkypeCall> _calls = new Dictionary<string, SkypeCall>();
+
         private readonly Dictionary<string, SkypeUser> _users = new Dictionary<string, SkypeUser>();
 
         /// <summary>
         /// Temporarilly holds a pending call that the user initiated him/herself. Waiting to get a call id
         /// </summary>
         private SkypeCall _pendingCall;
+
+        #endregion
 
         #region Events
 
@@ -50,6 +56,8 @@ namespace SkypeNet.Lib
 
         #endregion
 
+        #region Properties
+
         /// <summary>
         /// The current user that is logged into the Skype instance that is connected
         /// </summary>
@@ -71,6 +79,10 @@ namespace SkypeNet.Lib
         /// </summary>
         public string ConnectionStatus { get; private set; }
 
+        #endregion
+
+        #region Constructor and Disposal
+
         public SkypeNetClient()
             : base()
         {
@@ -82,8 +94,39 @@ namespace SkypeNet.Lib
         {
             this.MessageReceived -= OnMessageReceived_ForParsingOfMessageData;
 
+            // Delete all the calls and clean up events
+            foreach (var call in _calls.Values)
+                call.RequestCallUpdate -= call_RequestCallUpdate_ToSendMessageToSkypeForData;
+
             base.Dispose(disposing);
         }
+
+        #endregion
+
+        #region Creation of internal objects
+
+        /// <summary>
+        /// Gets a user by username from the list of all known users. If user does not exist then 
+        /// a new user is created with that username and added to the dictionary. The client then 
+        /// requests basic information for this new user from the Skype application.
+        /// </summary>
+        /// <param name="username"></param>
+        /// <returns></returns>
+        private SkypeUser GetOrCreateUser(string username)
+        {
+            SkypeUser user;
+            if (!_users.TryGetValue(username, out user))
+            {
+                user = new SkypeUser() { UserName = username };
+                _users.Add(username, user);
+            }
+            return user;
+        }
+
+        #endregion
+
+
+        #region Handling Async Message retrieval and parsing
 
         private void OnMessageReceived_ForParsingOfMessageData(object sender, string rawResponse)
         {
@@ -139,24 +182,10 @@ namespace SkypeNet.Lib
                     break;
             }
         }
+        
+        #endregion
 
-        /// <summary>
-        /// Gets a user by username from the list of all known users. If user does not exist then 
-        /// a new user is created with that username and added to the dictionary. The client then 
-        /// requests basic information for this new user from the Skype application.
-        /// </summary>
-        /// <param name="username"></param>
-        /// <returns></returns>
-        private SkypeUser GetOrCreateUser(string username)
-        {
-            SkypeUser user;
-            if( !_users.TryGetValue(username, out user))
-            {
-                user = new SkypeUser(){UserName = username};
-                _users.Add(username, user);
-            }
-            return user;
-        }
+        #region Updating Internal Client State From Messages
 
         private void SetCurrentUserStatus(string userstatus)
         {
@@ -170,7 +199,11 @@ namespace SkypeNet.Lib
         {
             CurrentUser = GetOrCreateUser(username);
         }
-        
+
+        #endregion
+
+        #region Handling - Call Message
+
         private void HandleCallMessage(string callId, string property, string value)
         {
             // Attempt to locate the call message in all the calls available
@@ -194,12 +227,14 @@ namespace SkypeNet.Lib
                 }
 
                 // Add the call to the list of all known calls
+                call.RequestCallUpdate -= call_RequestCallUpdate_ToSendMessageToSkypeForData;
+                call.RequestCallUpdate += call_RequestCallUpdate_ToSendMessageToSkypeForData;
                 _calls.Add(callId, call);
             }
 
-            
+
             // Update the property value if it is set
-            if( property != null )
+            if (property != null)
                 SkypeSerializer.Update(call, property, value);
 
             // Raise the correct events
@@ -209,6 +244,13 @@ namespace SkypeNet.Lib
                 OnCallReceived(call);
         }
 
+        private void call_RequestCallUpdate_ToSendMessageToSkypeForData(object sender, string propertyName, object[] values)
+        {
+            // TODO: Get the skype parameter value for the property name and instigate a skype get call data request!
+        }
+
+        #endregion
+        
         private void HandleChatMessage(string chatId, string property, string value)
         {
 

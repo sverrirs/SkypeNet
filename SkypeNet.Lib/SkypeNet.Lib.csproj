@@ -41,6 +41,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Core\AbstractNotifyPropertyChanged.cs" />
+    <Compile Include="Core\EventExtensions.cs" />
+    <Compile Include="Core\ExpressionExtensions.cs" />
     <Compile Include="Core\GenericEventHandler.cs" />
     <Compile Include="Core\Objects\SkypeActions.cs" />
     <Compile Include="Core\SkypeTypes.cs" />

@@ -90,12 +90,14 @@ namespace SkypeNet.App
 
         private void SkypeOnCallUpdated(object sender, SkypeCall skypeCall)
         {
-            rtbOutput.AppendText("Call Updated: " + skypeCall.Id +" [" + skypeCall.TimeStamp.ToString("yyyy-MM-dd HH:mm:ss") + "] > " + skypeCall.Status + " > " + skypeCall.Duration + "\n");
+            //rtbOutput.AppendText("Call Updated: " + skypeCall.Id +" [" + skypeCall.TimeStamp.ToString("yyyy-MM-dd HH:mm:ss") + "] > " + skypeCall.Status + " > " + skypeCall.Duration + "\n");
+            rtbOutput.AppendText("Call Updated: " + skypeCall.Id +" [" + skypeCall.TimeStamp + "] > " + skypeCall.Status + " > " + skypeCall.Duration + "\n");
         }
 
         private void SkypeOnCallReceived(object sender, SkypeCall skypeCall)
         {
-            rtbOutput.AppendText("Call Received: " + skypeCall.Id + " [" + skypeCall.TimeStamp.ToString("yyyy-MM-dd HH:mm:ss") + "] > " + skypeCall.Status + " > " + skypeCall.Duration + "\n");
+            //rtbOutput.AppendText("Call Received: " + skypeCall.Id + " [" + skypeCall.TimeStamp.ToString("yyyy-MM-dd HH:mm:ss") + "] > " + skypeCall.Status + " > " + skypeCall.Duration + "\n");
+            rtbOutput.AppendText("Call Received: " + skypeCall.Id + " [" + skypeCall.TimeStamp + "] > " + skypeCall.Status + " > " + skypeCall.Duration + "\n");
         }
 
         private void btnTest_Click(object sender, EventArgs e)

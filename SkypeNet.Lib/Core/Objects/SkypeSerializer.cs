@@ -68,6 +68,13 @@ namespace SkypeNet.Lib.Core.Objects
                 return;
             }
 
+            // TODO: if the property is an array type, pull out the indexat property and attempt to assign the 
+            // location in the array the value we have!!!
+
+            // Check if the value can be assigned to this type
+            if (value != null && !pInfo.PropertyType.IsInstanceOfType(value))
+                value = Convert.ChangeType(value, pInfo.PropertyType);
+
             // Invoke the setter using the value
             pInfo.GetSetMethod(true).Invoke(instance, new[] {value});
         }
